@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleft Golf Content Queue</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        h1 { 
+            text-align: center; 
+            margin-bottom: 10px;
+            color: #22c55e;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+        .todo-box {
+            max-width: 600px;
+            margin: 0 auto 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #7c2d12 0%, #451a03 100%);
+            border: 2px solid #f97316;
+            border-radius: 12px;
+        }
+        .todo-box h3 {
+            color: #fb923c;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .todo-box ul {
+            color: #fed7aa;
+            margin-left: 20px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .todo-box li { margin-bottom: 5px; }
+        .phase-header {
+            max-width: 600px;
+            margin: 40px auto 20px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+        }
+        .phase-header h2 {
+            color: #3b82f6;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .phase-header p {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        .posts { 
+            max-width: 600px; 
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        .post {
+            background: #1e293b;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .post.priority {
+            border: 2px solid #22c55e;
+        }
+        .carousel {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        .carousel img {
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        .carousel-hint {
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+            padding: 8px;
+            background: #0f172a;
+        }
+        .post img, .post video {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        .post-content {
+            padding: 20px;
+        }
+        .post-number {
+            background: #22c55e;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .post-number.intro { background: #8b5cf6; }
+        .post-number.personality { background: #3b82f6; }
+        .post-number.meme { background: #f59e0b; }
+        .post-number.grant { background: #ec4899; }
+        .post-number.video { background: #ef4444; }
+        .post-number.waiting { background: #6b7280; }
+        .caption {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            font-size: 14px;
+            border: 1px solid #334155;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+            text-align: center;
+            font-size: 14px;
+            min-width: 120px;
+        }
+        .btn:hover { transform: scale(1.02); filter: brightness(1.1); }
+        .btn:active { transform: scale(0.98); }
+        .btn-copy { background: #22c55e; color: #000; }
+        .btn-download { background: #3b82f6; color: #fff; }
+        .btn.copied { background: #16a34a; }
+        .posted { opacity: 0.4; }
+        .posted .post-number { background: #475569 !important; }
+        .mark-posted {
+            background: none;
+            border: 1px solid #475569;
+            color: #94a3b8;
+            font-size: 12px;
+            padding: 8px 12px;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .mark-posted:hover { background: #334155; }
+    </style>
+</head>
+<body>
+    <h1>⛳ Sleft Golf Content Queue</h1>
+    <p class="subtitle">All traffic → sleftpayments.com/golf</p>
+    
+    <!-- TODO BOX FOR HERB -->
+    <div class="todo-box">
+        <h3>📋 TODO: Content Needed from Herb</h3>
+        <ul>
+            <li><strong>Photos of Herb & Grant together</strong> (golf course, casual, anything)</li>
+            <li>More golf action shots (swings, putts)</li>
+            <li>Fishing photos for marina/tackle shop vertical</li>
+            <li>Any videos (swings, course tours, tips)</li>
+        </ul>
+    </div>
+
+    <!-- DYNAMIC POSTS FROM TELEGRAM (Hidden if empty) -->
+    <div id="dynamic-section" style="display: none;">
+        <div class="phase-header" style="border-left-color: #f59e0b; background: linear-gradient(135deg, #451a03 0%, #0f172a 100%);">
+            <h2 style="color: #f59e0b;">🆕 Fresh from Telegram</h2>
+            <p>New content from Herb - ready to post!</p>
+        </div>
+        <div class="posts" id="dynamic-posts"></div>
+    </div>
+
+    <div class="posts">
+        
+        <!-- POST 1: HERB INTRO CAROUSEL -->
+        <div class="phase-header">
+            <h2>🎯 POST FIRST: The Introduction</h2>
+            <p>Carousel post with Herb's best photos. Download all 5 images and create a Facebook carousel.</p>
+        </div>
+
+        <div class="post priority" id="post-1">
+            <div class="carousel">
+                <img src="images/herb_cart_sunset_hero.jpg" alt="Herb 1" onclick="window.open(this.src)">
+                <img src="images/herb_golf_cart_lovebug.jpg" alt="Herb 2" onclick="window.open(this.src)">
+                <img src="images/herb_rangefinder_sunset.jpg" alt="Herb 3" onclick="window.open(this.src)">
+                <img src="images/herb_sand_trap_smile.jpg" alt="Herb 4" onclick="window.open(this.src)">
+                <img src="images/08-victory-rain.jpg" alt="Herb 5" onclick="window.open(this.src)">
+            </div>
+            <div class="carousel-hint">← Swipe to see all 5 carousel images →</div>
+            <div class="post-content">
+                <span class="post-number intro">⭐ POST 1 - INTRO CAROUSEL (POST THIS FIRST)</span>
+                <div class="caption" id="caption-1">Meet Herb Denmark 🏌️‍♂️
+
+25+ years in the payment processing industry. Helped thousands of businesses keep more of what they earn.
+
+Now I'm semi-retired in West Palm Beach, Florida. Playing golf every day. Enjoying life. And still helping business owners who are tired of overpaying for credit card processing.
+
+If you run a golf course, pro shop, restaurant, marina, or any business nationwide and you're giving away 3-4% on every transaction... let's talk. No pressure, just straight talk from someone who's been in the trenches.
+
+Life's about balance. Golf with friends. Sunshine. Good conversations. And helping people along the way.
+
+Follow along. More to come.
+
+👉 sleftpayments.com/golf
+
+#MerchantServices #BusinessOwners #WestPalmBeach #GolfLife #PaymentProcessing #SleftPayments</div>
+                <div class="buttons">
+                    <button class="btn btn-quick" onclick="quickPost(1)" style="flex: 2;">🚀 One-Click Post to FB</button>
+                    <button class="btn btn-copy" onclick="copyCaption(1)">📋 Copy</button>
+                </div>
+                <div class="buttons" style="margin-top: 8px;">
+                    <a href="images/herb_cart_sunset_hero.jpg" download class="btn btn-download">⬇️ 1</a>
+                    <a href="images/herb_golf_cart_lovebug.jpg" download class="btn btn-download">⬇️ 2</a>
+                    <a href="images/herb_rangefinder_sunset.jpg" download class="btn btn-download">⬇️ 3</a>
+                    <a href="images/herb_sand_trap_smile.jpg" download class="btn btn-download">⬇️ 4</a>
+                    <a href="images/08-victory-rain.jpg" download class="btn btn-download">⬇️ 5</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(1)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- WAITING: GRANT + HERB TOGETHER -->
+        <div class="post" id="post-waiting" style="border: 2px dashed #6b7280;">
+            <div class="post-content">
+                <span class="post-number waiting">⏳ WAITING - NEED PHOTOS</span>
+                <div class="caption" id="caption-waiting">🚨 <strong>NEXT POST NEEDS:</strong> Photos of Herb & Grant together
+
+Once we have these, this becomes Post 2: "Meet the Team" introducing the father-son duo.
+
+Herb: Please send 2-3 photos of you and Grant together (golf course preferred, but any will work).</div>
+            </div>
+        </div>
+
+        <!-- PHASE: HERB'S STORY -->
+        <div class="phase-header">
+            <h2>🏌️ Herb's Story (Mix of Content)</h2>
+            <p>Lifestyle, personality, occasional memes. Build the character.</p>
+        </div>
+
+        <!-- POST 2 -->
+        <div class="post" id="post-2">
+            <img src="images/herb_cart_sunset_wide.jpg" alt="Sunset" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 2</span>
+                <div class="caption" id="caption-2">Clubs loaded. Sun setting. One more hole before dark.
+
+The best rounds are the ones you don't want to end. ⛳🌅
+
+#GoldenHour #SunsetGolf #FloridaGolf #GolfLife #WestPalmBeach</div>
+                <div class="buttons">
+                    <button class="btn btn-quick" onclick="quickPost(2)" style="flex: 2;">🚀 One-Click Post</button>
+                    <button class="btn btn-copy" onclick="copyCaption(2)">📋 Copy</button>
+                    <a href="images/herb_cart_sunset_wide.jpg" download class="btn btn-download">⬇️</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(2)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 3 -->
+        <div class="post" id="post-3">
+            <img src="images/herb_putting_green_wide.jpg" alt="Putting" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 3</span>
+                <div class="caption" id="caption-3">Palm trees. Sunset. A putt that matters.
+
+This is why we live in Florida. 🌴⛳
+
+#FloridaGolf #PuttingGreen #SunsetGolf #GolfParadise #WestPalmBeach</div>
+                <div class="buttons">
+                    <button class="btn btn-quick" onclick="quickPost(3)" style="flex: 2;">🚀 One-Click Post</button>
+                    <button class="btn btn-copy" onclick="copyCaption(3)">📋 Copy</button>
+                    <a href="images/herb_putting_green_wide.jpg" download class="btn btn-download">⬇️</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(3)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 4 - MEME -->
+        <div class="post" id="post-4">
+            <img src="images/04-designated-driver.jpg" alt="Meme" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number meme">POST 4 - MEME</span>
+                <div class="caption" id="caption-4">My driver takes its job very seriously 🏌️‍♂️😂
+
+Happy weekend, golfers!
+
+#GolfHumor #GolfMemes #WeekendGolf #DesignatedDriver</div>
+                <div class="buttons">
+                    <button class="btn btn-quick" onclick="quickPost(4)" style="flex: 2;">🚀 One-Click Post</button>
+                    <button class="btn btn-copy" onclick="copyCaption(4)">📋 Copy</button>
+                    <a href="images/04-designated-driver.jpg" download class="btn btn-download">⬇️</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(4)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 5 -->
+        <div class="post" id="post-5">
+            <img src="images/herb_fairway_water.jpg" alt="Fairway" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 5</span>
+                <div class="caption" id="caption-5">Water on the left. Palm trees on the right. Sunshine all around.
+
+Just another Tuesday in South Florida. How's YOUR week going?
+
+#FloridaGolf #GolfCourse #WaterHazard #GolfLife #TuesdayVibes</div>
+                <div class="buttons">
+                    <button class="btn btn-quick" onclick="quickPost(5)" style="flex: 2;">🚀 One-Click Post</button>
+                    <button class="btn btn-copy" onclick="copyCaption(5)">📋 Copy</button>
+                    <a href="images/herb_fairway_water.jpg" download class="btn btn-download">⬇️</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(5)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 6 -->
+        <div class="post" id="post-6">
+            <img src="images/herb_driving_profile.jpg" alt="Driving" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 6</span>
+                <div class="caption" id="caption-6">Eyes on the fairway. Mind on the next shot.
+
+Golf teaches you to stay present. One shot at a time. 🏌️‍♂️
+
+#GolfMindset #StayFocused #FloridaGolf #GolfLife #OneShot</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(6)">📋 Copy Caption</button>
+                    <a href="images/herb_driving_profile.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(6)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 7 - MEME -->
+        <div class="post" id="post-7">
+            <img src="images/05-old-eyes.jpg" alt="Meme" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number meme">POST 7 - MEME</span>
+                <div class="caption" id="caption-7">Between the two of us, we ALMOST have one fully functioning golfer 😂⛳
+
+Tag your golf buddy who relates.
+
+#GolfProblems #GolfHumor #GolfLife #GolfMemes</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(7)">📋 Copy Caption</button>
+                    <a href="images/05-old-eyes.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(7)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 8 -->
+        <div class="post" id="post-8">
+            <img src="images/09-golf-buddies.jpg" alt="Buddies" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 8</span>
+                <div class="caption" id="caption-8">Golf brings good people together 🏌️‍♂️🤝
+
+The game is great. The company makes it better. Who's in YOUR golf crew?
+
+#GolfBuddies #GolfSquad #FloridaGolf #GoodCompany #GolfLife</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(8)">📋 Copy Caption</button>
+                    <a href="images/09-golf-buddies.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(8)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 9 -->
+        <div class="post" id="post-9">
+            <img src="images/herb_at_hole_portrait.jpg" alt="Hole" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 9</span>
+                <div class="caption" id="caption-9">Another birdie? Not quite. But I'll take the par.
+
+Golf humbles you. That's part of why we love it.
+
+How was YOUR round this week?
+
+#GolfLife #ParSave #HumbleGame #FloridaGolf #WeekendGolf</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(9)">📋 Copy Caption</button>
+                    <a href="images/herb_at_hole_portrait.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(9)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 10 - SOFT CTA -->
+        <div class="post" id="post-10">
+            <img src="images/herb_fairway_portrait.jpg" alt="Portrait" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number intro">POST 10 - SOFT CTA</span>
+                <div class="caption" id="caption-10">Quick thought for any golf course or pro shop owner:
+
+Your credit card processing fees are probably too high. Most courses pay 2.5-4% on every transaction. That adds up fast.
+
+I've spent 25 years in this industry. I know the tricks processors use. And I know how to fight back.
+
+If you want a free, no-obligation look at your processing statement, send me a message. I'll tell you exactly where you're overpaying.
+
+👉 sleftpayments.com/golf
+
+#GolfBusiness #ProShop #MerchantServices #SaveMoney #FloridaGolf</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(10)">📋 Copy Caption</button>
+                    <a href="images/herb_fairway_portrait.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(10)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 11 - MEME -->
+        <div class="post" id="post-11">
+            <img src="images/10-gator.jpg" alt="Gator" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number meme">POST 11 - VIRAL</span>
+                <div class="caption" id="caption-11">Just another day on a Florida golf course 🐊⛳
+
+When you've got a 10-foot putt... and a 6-foot gator between you and the hole.
+
+Play it as it lies? 😂
+
+#FloridaGolf #GatorOnTheGreen #OnlyInFlorida #GolfLife</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(11)">📋 Copy Caption</button>
+                    <a href="images/10-gator.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(11)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 12 -->
+        <div class="post" id="post-12">
+            <img src="images/herb_cart_candid_sunset.jpg" alt="Candid" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 12</span>
+                <div class="caption" id="caption-12">Adjusting the shades. Sun's getting low. One more hole.
+
+These are the moments. ☀️🏌️‍♂️
+
+#GoldenHour #FloridaSunset #GolfLife #OneMoreHole #Grateful</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(12)">📋 Copy Caption</button>
+                    <a href="images/herb_cart_candid_sunset.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(12)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 13 -->
+        <div class="post" id="post-13">
+            <img src="images/18-comeback.jpg" alt="Comeback" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 13 - STORY</span>
+                <div class="caption" id="caption-13">60 days after hip replacement surgery, back on the course with ZERO pain. 🙌💪
+
+Golf isn't just a game. It's a reason to heal, a reason to push, and a reason to celebrate every day.
+
+Never stop moving. Never stop playing.
+
+#GolfComeback #HipReplacement #NeverGiveUp #GolfLife #Inspiration</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(13)">📋 Copy Caption</button>
+                    <a href="images/18-comeback.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(13)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 14 -->
+        <div class="post" id="post-14">
+            <img src="images/herb_golf_cart_wide.jpg" alt="Cart" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 14</span>
+                <div class="caption" id="caption-14">Ready to roll. ⛳🚗
+
+There's something about that first drive down the cart path. Full of hope. Full of possibility.
+
+Then you hit your first shot into the water. 😂
+
+#GolfHumor #CartLife #FloridaGolf #FirstTee #GolfTruth</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(14)">📋 Copy Caption</button>
+                    <a href="images/herb_golf_cart_wide.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(14)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 15 - MEME -->
+        <div class="post" id="post-15">
+            <img src="images/06-fred-flintstone.jpg" alt="Flintstone" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number meme">POST 15 - MEME</span>
+                <div class="caption" id="caption-15">Golf has been around a LONG time ⛳🦴
+
+Wishing everyone a prehistoric-level good round this week!
+
+#GolfHumor #Flintstones #GolfMemes #YabbaDabbaDoo</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(15)">📋 Copy Caption</button>
+                    <a href="images/06-fred-flintstone.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(15)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 16 -->
+        <div class="post" id="post-16">
+            <img src="images/herb_putting_green_flag.jpg" alt="Flag" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 16</span>
+                <div class="caption" id="caption-16">The flag is always closer than it looks. Until you're putting. Then it's miles away. 🚩⛳
+
+Anyone else feel personally attacked by a 4-footer?
+
+#PuttingProblems #GolfLife #ShortPutts #FloridaGolf #GolfTruth</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(16)">📋 Copy Caption</button>
+                    <a href="images/herb_putting_green_flag.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(16)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 17 -->
+        <div class="post" id="post-17">
+            <img src="images/11-love-bug.jpg" alt="Love Bug" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 17 - PERSONALITY + CTA</span>
+                <div class="caption" id="caption-17">Life's about balance.
+
+Golf with friends. Sunshine. Good conversations. And helping business owners keep more of what they earn.
+
+That's what I'm about. Simple as that.
+
+If you're in South Florida and want to talk golf OR business, I'm always around.
+
+👉 sleftpayments.com/golf
+
+#FloridaLife #GolfLife #MerchantServices #SmallBusiness #WestPalmBeach</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(17)">📋 Copy Caption</button>
+                    <a href="images/11-love-bug.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(17)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 18 -->
+        <div class="post" id="post-18">
+            <img src="images/15-winter.jpg" alt="Winter" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 18</span>
+                <div class="caption" id="caption-18">40 degrees? No problem. ❄️⛳
+
+Real golfers don't wait for perfect weather. Layer up, tee up, get after it.
+
+What's the coldest round YOU'VE ever played?
+
+#WinterGolf #AllWeatherGolfer #DedicatedGolfer #GolfLife #NoBadWeather</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(18)">📋 Copy Caption</button>
+                    <a href="images/15-winter.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(18)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 19 -->
+        <div class="post" id="post-19">
+            <img src="images/01-colorful-fit.jpg" alt="Colorful" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number personality">POST 19</span>
+                <div class="caption" id="caption-19">Florida golf means bold colors and big energy. ☀️🌴
+
+If you're gonna play in paradise, dress like it.
+
+What's YOUR go-to golf outfit?
+
+#FloridaGolf #GolfStyle #BrightColors #GolfFashion #SouthFlorida</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(19)">📋 Copy Caption</button>
+                    <a href="images/01-colorful-fit.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(19)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- POST 20 - MEME -->
+        <div class="post" id="post-20">
+            <img src="images/07-dino-cart.jpg" alt="Dino" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number meme">POST 20 - MEME</span>
+                <div class="caption" id="caption-20">Forget the E-Z-GO, Fred's riding in style 🦕⛳
+
+When your golf cart gets 0 miles per gallon but runs on pure Bedrock energy.
+
+#Flintstones #GolfCart #GolfHumor #WeekendGolf</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(20)">📋 Copy Caption</button>
+                    <a href="images/07-dino-cart.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(20)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- VIDEO -->
+        <div class="post" id="post-21">
+            <video src="images/herb_video_01.mp4" controls></video>
+            <div class="post-content">
+                <span class="post-number video">POST 21 - VIDEO</span>
+                <div class="caption" id="caption-21">Tap in for par. ⛳
+
+Simple pleasures.
+
+#GolfLife #FloridaGolf #ParSave #WeekendGolf</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(21)">📋 Copy Caption</button>
+                    <a href="images/herb_video_01.mp4" download class="btn btn-download">🎬 Download Video</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(21)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+        <!-- GRANT INTRO - FOR LATER -->
+        <div class="phase-header">
+            <h2>👨‍⚕️ Later: Meet Grant</h2>
+            <p>Once we have photos of Herb & Grant together, add the team intro posts here.</p>
+        </div>
+
+        <div class="post" id="post-22">
+            <img src="images/grant_golf_cart.jpg" alt="Grant" onclick="window.open(this.src)">
+            <div class="post-content">
+                <span class="post-number grant">POST 22 - GRANT (USE AFTER FATHER-SON PHOTOS)</span>
+                <div class="caption" id="caption-22">Time to introduce the other half of the operation. 🏌️‍♂️
+
+This is my son Grant. 4th year medical student. AI expert. And the founder of Sleft Payments.
+
+Together, we're helping businesses nationwide eliminate credit card processing fees. Old school relationships + new school technology.
+
+👉 sleftpayments.com/golf
+
+#FamilyBusiness #FatherAndSon #SleftPayments #BusinessOwners #GolfLife</div>
+                <div class="buttons">
+                    <button class="btn btn-copy" onclick="copyCaption(22)">📋 Copy Caption</button>
+                    <a href="images/grant_golf_cart.jpg" download class="btn btn-download">⬇️ Download</a>
+                </div>
+                <button class="btn mark-posted" onclick="markPosted(22)">✓ Mark as Posted</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Facebook Page URL - Sleft Payments page
+        const FB_PAGE_URL = 'https://www.facebook.com/profile.php?id=61565284110584';
+
+        function copyCaption(id) {
+            const caption = document.getElementById('caption-' + id).innerText;
+            navigator.clipboard.writeText(caption).then(() => {
+                const btn = event.target;
+                btn.innerText = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerText = '📋 Copy Caption';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // ONE-CLICK POST: Copies caption, downloads ALL images, opens Facebook
+        function oneClickPost(id, imageUrls) {
+            const caption = document.getElementById('caption-' + id).innerText;
+
+            // Normalize to array
+            const urls = Array.isArray(imageUrls) ? imageUrls : (imageUrls ? [imageUrls] : []);
+
+            // Copy caption to clipboard
+            navigator.clipboard.writeText(caption).then(() => {
+                // Download ALL images with slight delays to avoid browser blocking
+                urls.forEach((url, index) => {
+                    setTimeout(() => {
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = url.split('/').pop() || `post-image-${index + 1}.jpg`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }, index * 200); // 200ms delay between each download
+                });
+
+                // Show toast with count
+                const count = urls.length;
+                showToast(`Caption copied + ${count} image${count > 1 ? 's' : ''} downloading!`, 4000);
+
+                // Open Facebook page after downloads start
+                setTimeout(() => {
+                    window.open(FB_PAGE_URL, '_blank');
+                }, urls.length * 200 + 300);
+            });
+        }
+
+        // Quick post - copies and opens FB in one click
+        function quickPost(id) {
+            const post = document.getElementById('post-' + id);
+            // Get ALL images (for carousels)
+            const images = post.querySelectorAll('img');
+            const imageUrls = Array.from(images).map(img => img.src);
+            oneClickPost(id, imageUrls);
+        }
+
+        function showToast(message, duration = 3000) {
+            // Remove existing toast
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <span style="margin-right: 8px;">✓</span>
+                ${message}
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // Show instructions overlay with image button
+        function showPostInstructions(imageUrl) {
+            const overlay = document.createElement('div');
+            overlay.id = 'post-instructions';
+            overlay.innerHTML = `
+                <div style="background: #1e293b; padding: 30px; border-radius: 16px; max-width: 420px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+                    <h3 style="color: #22c55e; margin-bottom: 15px; font-size: 24px;">✅ Caption Copied!</h3>
+                    <p style="color: #94a3b8; margin-bottom: 20px;">Facebook opened in new tab. Now:</p>
+                    <ol style="text-align: left; color: #cbd5e1; line-height: 2.2; margin-bottom: 25px; padding-left: 20px;">
+                        <li>Click <strong style="color: #fff;">"Photo/video"</strong> or create post</li>
+                        <li>Press <strong style="color: #fff;">Cmd+V</strong> to paste caption</li>
+                        <li>Click button below to get image, then upload it</li>
+                        <li>Click <strong style="color: #fff;">Post</strong>!</li>
+                    </ol>
+                    ${imageUrl ? `<a href="${imageUrl}" target="_blank" style="display: inline-block; background: #3b82f6; color: #fff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; margin-bottom: 15px;">📷 Open Image to Save</a><br>` : ''}
+                    <button onclick="document.getElementById('post-instructions').remove()" style="background: #22c55e; color: #000; border: none; padding: 14px 35px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px;">Done</button>
+                </div>
+            `;
+            overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+            document.body.appendChild(overlay);
+        }
+
+        function markPosted(id) {
+            const post = document.getElementById('post-' + id);
+            post.classList.toggle('posted');
+            const btn = event.target;
+            if (post.classList.contains('posted')) {
+                btn.innerText = '↩️ Unmark';
+                localStorage.setItem('posted-' + id, 'true');
+                showToast('Marked as posted!');
+            } else {
+                btn.innerText = '✓ Mark as Posted';
+                localStorage.removeItem('posted-' + id);
+            }
+        }
+
+        // Load any dynamic posts from the API queue
+        async function loadDynamicPosts() {
+            try {
+                const response = await fetch('/api/queue');
+                if (!response.ok) return;
+
+                const { posts } = await response.json();
+                if (!posts || posts.length === 0) return;
+
+                const container = document.getElementById('dynamic-posts');
+                if (!container) return;
+
+                // Show the section
+                document.getElementById('dynamic-section').style.display = 'block';
+
+                container.innerHTML = posts
+                    .filter(p => !p.posted)
+                    .map((post, i) => `
+                        <div class="post" id="dynamic-${post.id}" style="border: 2px solid #f59e0b;">
+                            ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Content" onclick="window.open(this.src)">` : ''}
+                            <div class="post-content">
+                                <span class="post-number" style="background: #f59e0b;">NEW - FROM TELEGRAM</span>
+                                <div class="caption" id="caption-dynamic-${post.id}">${post.caption}</div>
+                                <div class="buttons">
+                                    <button class="btn" style="background: #f59e0b; color: #000; flex: 2;" onclick="quickPostDynamic('${post.id}')">
+                                        🚀 One-Click Post
+                                    </button>
+                                    <button class="btn btn-copy" onclick="copyDynamicCaption('${post.id}')">📋 Copy</button>
+                                    ${post.imageUrl ? `<a href="${post.imageUrl}" download class="btn btn-download">⬇️</a>` : ''}
+                                </div>
+                                <button class="btn mark-posted" onclick="markDynamicPosted('${post.id}')">✓ Mark as Posted</button>
+                            </div>
+                        </div>
+                    `).join('');
+            } catch (e) {
+                console.log('No dynamic posts API available');
+            }
+        }
+
+        function copyDynamicCaption(id) {
+            const caption = document.getElementById('caption-dynamic-' + id).innerText;
+            navigator.clipboard.writeText(caption).then(() => {
+                showToast('Caption copied!');
+            });
+        }
+
+        function quickPostDynamic(id) {
+            const caption = document.getElementById('caption-dynamic-' + id).innerText;
+            const post = document.getElementById('dynamic-' + id);
+            const img = post.querySelector('img');
+
+            navigator.clipboard.writeText(caption).then(() => {
+                showToast('Caption copied! Opening Facebook...');
+                setTimeout(() => window.open(FB_PAGE_URL, '_blank'), 500);
+                if (img) setTimeout(() => window.open(img.src, '_blank'), 800);
+            });
+        }
+
+        async function markDynamicPosted(id) {
+            const post = document.getElementById('dynamic-' + id);
+            post.style.opacity = '0.4';
+            showToast('Marked as posted!');
+
+            // Try to update API
+            try {
+                await fetch('/api/queue', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, action: 'mark-posted' })
+                });
+            } catch (e) {
+                // Store locally if API fails
+                localStorage.setItem('dynamic-posted-' + id, 'true');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load posted state for static posts
+            for (let i = 1; i <= 30; i++) {
+                if (localStorage.getItem('posted-' + i)) {
+                    const post = document.getElementById('post-' + i);
+                    if (post) {
+                        post.classList.add('posted');
+                        post.querySelector('.mark-posted').innerText = '↩️ Unmark';
+                    }
+                }
+            }
+
+            // Load dynamic posts from API
+            loadDynamicPosts();
+        });
+    </script>
+
+    <!-- Toast notification styles -->
+    <style>
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #22c55e;
+            color: #000;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 9999;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .btn-quick {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            color: #000 !important;
+        }
+        .btn-quick:hover {
+            filter: brightness(1.1);
+        }
+    </style>
+</body>
+</html>

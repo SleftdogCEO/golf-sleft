@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golf with Herb | Zero-Fee Payment Processing for Florida Golf Courses</title>
+    <meta name="description" content="Herb Denmark helps Florida golf courses eliminate 100% of credit card processing fees. Pro shops, restaurants, memberships - we handle it all.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0d5c2e 0%, #1a8f4a 50%, #0d5c2e 100%);
+            min-height: 100vh;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        .hero {
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+            opacity: 0.95;
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+            font-weight: 500;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #0d5c2e;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #fff;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-3px);
+        }
+
+        .social-proof {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+        }
+
+        /* FORM SECTION */
+        .form-section {
+            background: rgba(13, 92, 46, 0.3);
+            backdrop-filter: blur(20px);
+            padding: 4rem 2rem;
+            margin: 2rem 0;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.95);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .form-container h2 {
+            color: #0d5c2e;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .form-container p {
+            color: #2d5f3e;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #0d5c2e;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.9rem;
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #1a8f4a;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #0d5c2e 0%, #1a8f4a 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(13, 92, 46, 0.4);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 92, 46, 0.5);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            display: none;
+            background: #dcfce7;
+            border: 2px solid #22c55e;
+            color: #166534;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .success-message h3 {
+            color: #166534;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        /* FEATURES */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .feature {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 16px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .feature h3 {
+            margin-bottom: 0.75rem;
+            font-size: 1.3rem;
+        }
+
+        .feature p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+
+        footer a {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .cta-buttons {
+                flex-direction: column;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .form-container {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="logo">⛳</div>
+        <h1>Stop Losing Money on Every Swipe</h1>
+        <p class="subtitle">
+            I'm Herb Denmark. 20+ years in merchant services. I help Florida golf courses eliminate 100% of credit card processing fees. Pro shop, restaurant, memberships — all of it.
+        </p>
+
+        <div class="cta-buttons">
+            <a href="#contact-form" class="btn btn-primary">
+                📧 Get Free Rate Analysis
+            </a>
+            <a href="tel:2155956671" class="btn btn-secondary">
+                📞 Call (215) 595-6671
+            </a>
+        </div>
+
+        <div class="social-proof">
+            <strong>🏌️ Every course I work with saves $2K-$5K monthly.</strong><br>
+            Zero fees on greens fees, cart rentals, F&B, and membership dues.
+        </div>
+    </section>
+
+    <!-- WHY IT MATTERS -->
+    <div class="features">
+        <div class="feature">
+            <div class="feature-icon">💸</div>
+            <h3>You're Losing $30K-$60K/Year</h3>
+            <p>Most courses pay 2.5-4% on every transaction. On $100K monthly volume, that's $3K-$4K gone every month.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">✅</div>
+            <h3>100% Compliant Solution</h3>
+            <p>Cash discount program that's legal, transparent, and keeps your members happy. No tricks.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">🤝</div>
+            <h3>I'm On the Course Daily</h3>
+            <p>Local support from someone who actually golfs. Not a call center in another state.</p>
+        </div>
+    </div>
+
+    <!-- CONTACT FORM -->
+    <section id="contact-form" class="form-section">
+        <div class="form-container">
+            <div id="form-content">
+                <h2>Get Your Free Rate Analysis</h2>
+                <p>I'll show you exactly how much you're overpaying — usually takes 5 minutes.</p>
+
+                <form id="golf-form" action="https://formsubmit.co/grantharrisdenmark@gmail.com" method="POST">
+                    <!-- FormSubmit Configuration -->
+                    <input type="hidden" name="_subject" value="🏌️ New Golf Course Lead from Golf with Herb!">
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" name="_template" value="box">
+                    <input type="hidden" name="_next" value="https://golf-sleft.vercel.app/index.html?success=true">
+                    <input type="text" name="_honey" style="display:none">
+
+                    <div class="form-group">
+                        <label for="name">Your Name *</label>
+                        <input type="text" id="name" name="name" placeholder="John Smith" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" placeholder="john@golfclub.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone *</label>
+                        <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="course">Golf Course / Club Name</label>
+                        <input type="text" id="course" name="course" placeholder="Palm Beach Golf Club">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="role">Your Role</label>
+                        <select id="role" name="role">
+                            <option value="">Select...</option>
+                            <option value="Owner">Owner</option>
+                            <option value="General Manager">General Manager</option>
+                            <option value="Pro Shop Manager">Pro Shop Manager</option>
+                            <option value="Director of Golf">Director of Golf</option>
+                            <option value="Controller/Accountant">Controller/Accountant</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submit-btn">
+                        Get Free Analysis →
+                    </button>
+                </form>
+            </div>
+
+            <div class="success-message" id="success-message">
+                <h3>🎉 Thank You!</h3>
+                <p><strong>Herb will reach out within 24 hours</strong> with your custom rate analysis.</p>
+                <p style="margin-top: 1rem;">Want to talk sooner?</p>
+                <a href="tel:2155956671" class="btn btn-primary" style="margin-top: 1rem;">
+                    📞 Call Now: (215) 595-6671
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>
+            Part of <a href="https://www.sleftpayments.com">Sleft Payments</a> · Palm Beach, FL<br>
+            Herb Denmark · (215) 595-6671 · 20+ Years in Merchant Services
+        </p>
+    </footer>
+
+    <script>
+        // Phone number formatting
+        const phoneInput = document.getElementById('phone');
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.length <= 3) {
+                    e.target.value = '(' + value;
+                } else if (value.length <= 6) {
+                    e.target.value = '(' + value.slice(0,3) + ') ' + value.slice(3);
+                } else {
+                    e.target.value = '(' + value.slice(0,3) + ') ' + value.slice(3,6) + '-' + value.slice(6,10);
+                }
+            }
+        });
+
+        // Check for success parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'true') {
+            document.getElementById('form-content').style.display = 'none';
+            document.getElementById('success-message').classList.add('show');
+        }
+    </script>
+</body>
+</html>

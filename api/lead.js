@@ -58,7 +58,8 @@ export default async function handler(req, res) {
           email,
           phone,
           businessName: course || 'Golf Lead',
-          conversationSummary: 'New Golf Lead from golf-sleft.vercel.app. Role: ' + (role || 'N/A'),
+          source: 'golf-sleft',
+          conversationSummary: 'Role: ' + (role || 'N/A'),
         }),
       });
     } catch (emailErr) {

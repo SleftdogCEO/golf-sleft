@@ -327,14 +327,7 @@
                 <h2>Get Your Free Rate Analysis</h2>
                 <p>I'll show you exactly how much you're overpaying — usually takes 5 minutes.</p>
 
-                <form id="golf-form" action="https://formsubmit.co/grantharrisdenmark@gmail.com" method="POST">
-                    <!-- FormSubmit Configuration -->
-                    <input type="hidden" name="_subject" value="🏌️ New Golf Course Lead from Golf with Herb!">
-                    <input type="hidden" name="_captcha" value="false">
-                    <input type="hidden" name="_template" value="box">
-                    <input type="hidden" name="_next" value="https://golf-sleft.vercel.app/index.html?success=true">
-                    <input type="text" name="_honey" style="display:none">
-
+                <form id="golf-form">
                     <div class="form-group">
                         <label for="name">Your Name *</label>
                         <input type="text" id="name" name="name" placeholder="John Smith" required>
@@ -408,12 +401,37 @@
             }
         });
 
-        // Check for success parameter in URL
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('success') === 'true') {
-            document.getElementById('form-content').style.display = 'none';
-            document.getElementById('success-message').classList.add('show');
-        }
+        // Airtable form submission
+        document.getElementById('golf-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const course = document.getElementById('course').value;
+            const role = document.getElementById('role').value;
+
+            try {
+                const res = await fetch('/api/lead', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, course, role })
+                });
+
+                if (!res.ok) throw new Error('Submission failed');
+
+                document.getElementById('form-content').style.display = 'none';
+                document.getElementById('success-message').classList.add('show');
+            } catch (err) {
+                console.error('Form error:', err);
+                btn.disabled = false;
+                btn.textContent = 'Get Free Analysis →';
+                alert('Something went wrong. Please try again or call (215) 595-6671.');
+            }
+        });
     </script>
 </body>
 </html>
